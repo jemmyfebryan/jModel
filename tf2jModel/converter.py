@@ -3,11 +3,12 @@ import pickle
 from jModel import Converter_runtime
 
 class Converter:
-    version = "0.0.2"
+    version = "0.1.0"
 
     def __init__(self):
         self.hyperparameter_separator = "--"
         self.layer_separator = "##"
+        self.skipped_layer = ["InputLayer", "Dropout"]
         self.layers = []
         self.weights = []
 
@@ -20,39 +21,67 @@ class Converter:
         weight_index = 0
         for layer in tf_model.layers:
             layer_name = ""
-            layer_weight = [weights[weight_index]]
-            weight_index += 1
-            if layer.__class__.__name__ == "Dense":
-                layer_name = self.layer_name_add(layer_name, "Dense")
-                # Check Activation
-                layer_name = self.layer_name_add(layer_name, f"activation='{layer.activation.__name__}'")
-                # Check Bias
-                if layer.use_bias == True:
-                    layer_name = self.layer_name_add(layer_name, "use_bias=True")
-                    layer_weight.append(weights[weight_index])
-                    weight_index += 1
-                else:
-                    layer_name = self.layer_name_add(layer_name, "use_bias=False")
-            elif layer.__class__.__name__ == "LSTM":
-                layer_name = self.layer_name_add(layer_name, "LSTM")
-                # Add Recurrent Kernel Weight
+            # Non Weight-able Layer
+            layer_weight = []
+            if layer.__class__.__name__ in self.skipped_layer: continue
+            elif layer.__class__.__name__ == "Reshape":
+                layer_name = self.layer_name_add(layer_name, "Reshape")
+                layer_name = self.layer_name_add(layer_name, f"target_shape={layer.target_shape}")
+            elif layer.__class__.__name__ == "Flatten":
+                layer_name = self.layer_name_add(layer_name, "Flatten")
+            else:
+                # Weight-able Layer
                 layer_weight.append(weights[weight_index])
                 weight_index += 1
-                # Check Units
-                layer_name = self.layer_name_add(layer_name, f"units='{layer.units}'")
-                # Check Activation
-                layer_name = self.layer_name_add(layer_name, f"activation='{layer.activation.__name__}'")
-                # Check Bias
-                if layer.use_bias == True:
-                    layer_name = self.layer_name_add(layer_name, "use_bias=True")
+                if layer.__class__.__name__ == "Dense":
+                    layer_name = self.layer_name_add(layer_name, "Dense")
+                    # Check Activation
+                    layer_name = self.layer_name_add(layer_name, f"activation='{layer.activation.__name__}'")
+                    # Check Bias
+                    if layer.use_bias == True:
+                        layer_name = self.layer_name_add(layer_name, "use_bias=True")
+                        layer_weight.append(weights[weight_index])
+                        weight_index += 1
+                    else:
+                        layer_name = self.layer_name_add(layer_name, "use_bias=False")
+                elif layer.__class__.__name__ == "SimpleRNN":
+                    layer_name = self.layer_name_add(layer_name, "SimpleRNN")
+                    # Add Recurrent Kernel Weight
                     layer_weight.append(weights[weight_index])
                     weight_index += 1
+                    # Check Units
+                    layer_name = self.layer_name_add(layer_name, f"units='{layer.units}'")
+                    # Check Activation
+                    layer_name = self.layer_name_add(layer_name, f"activation='{layer.activation.__name__}'")
+                    # Check Bias
+                    if layer.use_bias == True:
+                        layer_name = self.layer_name_add(layer_name, "use_bias=True")
+                        layer_weight.append(weights[weight_index])
+                        weight_index += 1
+                    else:
+                        layer_name = self.layer_name_add(layer_name, "use_bias=False")
+                    # Check Return Sequences
+                    layer_name = self.layer_name_add(layer_name, f"return_sequences={layer.return_sequences}")
+                elif layer.__class__.__name__ == "LSTM":
+                    layer_name = self.layer_name_add(layer_name, "LSTM")
+                    # Add Recurrent Kernel Weight
+                    layer_weight.append(weights[weight_index])
+                    weight_index += 1
+                    # Check Units
+                    layer_name = self.layer_name_add(layer_name, f"units='{layer.units}'")
+                    # Check Activation
+                    layer_name = self.layer_name_add(layer_name, f"activation='{layer.activation.__name__}'")
+                    # Check Bias
+                    if layer.use_bias == True:
+                        layer_name = self.layer_name_add(layer_name, "use_bias=True")
+                        layer_weight.append(weights[weight_index])
+                        weight_index += 1
+                    else:
+                        layer_name = self.layer_name_add(layer_name, "use_bias=False")
+                    # Check Return Sequences
+                    layer_name = self.layer_name_add(layer_name, f"return_sequences={layer.return_sequences}")
                 else:
-                    layer_name = self.layer_name_add(layer_name, "use_bias=False")
-                # Check Return Sequences
-                layer_name = self.layer_name_add(layer_name, f"return_sequences={layer.return_sequences}")
-            else:
-                raise TypeError(f"Layer {layer.__class__.__name__} is not supported for jModel=={Converter.version}")
+                    raise TypeError(f"Layer {layer.__class__.__name__} is not supported for jModel=={Converter.version}")
             self.layers.append(layer_name)
             self.weights.append(layer_weight)
         print("Model successfully adapted to jModel!")

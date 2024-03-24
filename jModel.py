@@ -8,7 +8,7 @@ class Converter_runtime:
         self.hyperparameter_separator = hyperparameter_separator
 
 class Model:
-    version = "0.0.2"
+    version = "0.1.0"
 
     def __init__(self):
         self.layers = []
@@ -48,6 +48,23 @@ class Activation:
         exp_values = np.exp(input_array - np.max(input_array, axis=axis, keepdims=True))
         return exp_values / np.sum(exp_values, axis=axis, keepdims=True)
 
+class Reshape:
+    def __init__(self, weights, target_shape):
+        self.target_shape = target_shape
+
+    def feed(self, input_array):
+        batch_size = input_array.shape[0]
+        reshaped_array = input_array.reshape((batch_size,) + self.target_shape)
+        return reshaped_array
+    
+class Flatten:
+    def __init__(self, weights):
+        pass
+
+    def feed(self, input_array):
+        new_shape = (input_array.shape[0], -1)
+        return input_array.reshape(new_shape)
+
 class Dense:
     def __init__(self, weights, use_bias=True, activation='linear'):
         self.weights = weights
@@ -55,11 +72,62 @@ class Dense:
         self.use_bias = use_bias
 
     def feed(self, input_array):
+        # Ensure that the input_array has at least 2 dimensions
+        if len(input_array.shape) < 2:
+            input_array = np.expand_dims(input_array, axis=0)
+
+        # Calculate the output
         output = np.dot(input_array, self.weights[0])
+
         if self.use_bias:
-            output += self.weights[1]
+            # Expand the bias to match the batch size
+            bias = np.tile(self.weights[1], (input_array.shape[0], 1))
+            output += bias
+
         return self.activation(output)
     
+class SimpleRNN:
+    def __init__(self, weights, units, activation='tanh', use_bias=True, return_sequences=False):
+        self.weights = weights
+        self.units = int(units)
+        self.activation = getattr(Activation, activation)
+        self.use_bias = use_bias
+        self.return_sequences = return_sequences
+
+    def feed(self, input_array):
+        # Initialize weights and biases
+        hidden_dim = self.units
+
+        # Input-to-hidden weights
+        w_ih = self.weights[0]
+        # Hidden-to-hidden weights
+        w_hh = self.weights[1]
+        # Biases
+        if not self.use_bias:
+            b = np.zeros(hidden_dim)
+        else:
+            b = self.weights[2]
+
+        seq_len = input_array.shape[1]
+
+        hiddens = []
+        h = np.zeros((input_array.shape[0], hidden_dim))  # Hidden state initialization
+
+        for t in range(seq_len):
+            x_t = input_array[:, t, :]
+
+            # SimpleRNN cell operations
+            h = self.activation(np.dot(x_t, w_ih) + np.dot(h, w_hh) + b)
+
+            hiddens.append(h)
+
+        if self.return_sequences:
+            output = np.array(hiddens).transpose(1, 0, 2)
+        else:
+            output = h
+
+        return output
+
 class LSTM:
     def __init__(self, weights, units, activation='tanh', use_bias=True, return_sequences=False):
         self.weights = weights
