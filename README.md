@@ -1,5 +1,9 @@
 # jModel: Simplifying TensorFlow Model Deployment
 
+![Python](https://img.shields.io/badge/Python-3.11.3-blue)
+![NumPy](https://img.shields.io/badge/NumPy-1.26.4-green)
+![TensorFlow](https://img.shields.io/badge/TensorFlow-2.16.1-orange)
+
 **jModel** is a lightweight yet powerful Python script crafted to streamline the process of converting TensorFlow models into deployment-ready formats. It serves as a crucial tool for machine learning engineers and developers looking to seamlessly transition their trained models into production environments.
 
 ## Features:
