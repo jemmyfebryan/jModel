@@ -1,6 +1,10 @@
+# Python Environment
 .venv
-.gitignore
+
+# Python Cache
 __pycache__
+
+# Development File
 main.ipynb
 main.py
 test.jmodel
