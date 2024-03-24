@@ -59,7 +59,8 @@
 jModel is developed using `Python==3.11.3`, `NumPy==1.26.4`, `TensorFlow==2.16.1` and currently support TensorFlow model with specific layer and hyperparameters.
 
 1. **TensorFlow Layer**:
-    - **Dense**: units, use_bias, activation
+    - **Dense**: units, activation, use_bias
+    - **LSTM**: units, activation, use_bias, return_sequences
 
 2. **Activation Function**:
     - **linear**, **relu**, **sigmoid**, **tanh**

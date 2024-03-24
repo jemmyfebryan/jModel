@@ -1,5 +1,7 @@
 .venv
+.gitignore
 __pycache__
 main.ipynb
 main.py
 test.jmodel
+test.keras
