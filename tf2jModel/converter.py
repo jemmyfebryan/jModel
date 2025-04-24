@@ -3,7 +3,7 @@ import pickle
 from jModel import Converter_runtime
 
 class Converter:
-    version = "0.1.0"
+    version = "0.2.0"
 
     def __init__(self):
         self.hyperparameter_separator = "--"
@@ -24,11 +24,16 @@ class Converter:
             # Non Weight-able Layer
             layer_weight = []
             if layer.__class__.__name__ in self.skipped_layer: continue
+            elif layer.__class__.__name__ in ["AveragePooling2D", "MaxPooling2D"]:
+                layer_name = self.layer_name_add(layer_name, layer.__class__.__name__)
+                layer_name = self.layer_name_add(layer_name, f"pool_size={layer.pool_size}")
+                layer_name = self.layer_name_add(layer_name, f"strides={layer.strides}")
+                layer_name = self.layer_name_add(layer_name, f"padding='{layer.padding}'")
+            elif layer.__class__.__name__ == "Flatten":
+                layer_name = self.layer_name_add(layer_name, "Flatten")
             elif layer.__class__.__name__ == "Reshape":
                 layer_name = self.layer_name_add(layer_name, "Reshape")
                 layer_name = self.layer_name_add(layer_name, f"target_shape={layer.target_shape}")
-            elif layer.__class__.__name__ == "Flatten":
-                layer_name = self.layer_name_add(layer_name, "Flatten")
             else:
                 # Weight-able Layer
                 layer_weight.append(weights[weight_index])
@@ -89,7 +94,7 @@ class Converter:
     def convert(self, file_path):
         if file_path[-7:] != ".jmodel": raise NameError("File name must ended with .jmodel")
         with open(file_path, 'wb') as file:
-            pickle.dump(Converter_runtime(self.layers, self.weights, self.hyperparameter_separator), file)
+            pickle.dump(Converter_runtime(self.layers, self.weights, self.hyperparameter_separator, self.version), file)
         print(f"Model successfully saved at {file_path}")
 
 

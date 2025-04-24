@@ -9,3 +9,9 @@ main.ipynb
 main.py
 test.jmodel
 test.keras
+
+# Cache File
+bill_model.jmodel
+event_model.jmodel
+final_model.jmodel
+main copy.ipynb

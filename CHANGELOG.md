@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.2.1 - 2025-04-24
+### Added
+- Added **Constrained Softmax** activation function
+
+## v0.2.0 - 2024-04-14
+
+### Added
+- Added compatibility for **AveragePooling2D** layers with hyperparamters: **pool_size**, **strides**, **padding**
+- Added compatibility for **BatchNormalization** layers with hyperparameters: **axis**, **momentum**, **epsilon**, **center**, **scale**
+- Added compatibility for **Conv2D** layers with hyperparameters: **filters**, **kernel_size**, **strides**, **padding**, **activation**, **use_bias**
+- Added compatibility for **GlobalAveragePooling2D** layers
+- Added compatibility for **GlobalMaxPooling2D** layers
+- Added compatibility for **MaxPooling2D** layers with hyperparamters: **pool_size**, **strides**, **padding**
+
+### Changed
+- Make more clear error handling when converting and run model
+
 ## v0.1.0 - 2024-03-24
 
 ### Added
